@@ -3,10 +3,13 @@ package com.khatavani.KhatavaaniAI.service;
 import com.khatavani.KhatavaaniAI.dto.PaymentReceiveRequest;
 import com.khatavani.KhatavaaniAI.entity.Customer;
 import com.khatavani.KhatavaaniAI.entity.CustomerLedgerEntry;
+import com.khatavani.KhatavaaniAI.entity.User;
 import com.khatavani.KhatavaaniAI.repository.CustomerLedgerEntryRepository;
 import com.khatavani.KhatavaaniAI.repository.CustomerRepository;
+import com.khatavani.KhatavaaniAI.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +24,16 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerLedgerEntryRepository ledgerEntryRepository;
     private final EmailService emailService;
+    private final UserRepository userRepository;
 
     public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
+    }
+
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     public Customer saveCustomer(Customer customer) {
@@ -57,7 +67,7 @@ public class CustomerService {
         return ledgerEntryRepository.findByCustomerIdOrderByTransactionDateDesc(customerId);
     }
 
-    // Cron job: Har roz subah 9 baje overdue customers ko auto-email bhejega[cite: 1, 3]
+
     @Scheduled(cron = "0 0 9 * * *")
     public void sendOverdueReminders() {
         List<Customer> overdueCustomers = customerRepository.findOverdueCustomers(LocalDate.now());

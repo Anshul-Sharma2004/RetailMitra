@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -18,4 +19,11 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     // Cron job ke liye: Jinki due date nikal chuki hai aur udhaar baaki hai[cite: 1, 3]
     @Query("SELECT c FROM Customer c WHERE c.dueDate <= :currentDate AND c.currentDue > 0")
     List<Customer> findOverdueCustomers(@Param("currentDate") LocalDate currentDate);
+
+
+    // Current dukaandar ka kul pending udhaar nikalne ke liye
+    @Query("SELECT COALESCE(SUM(c.currentDue), 0) FROM Customer c WHERE c.user.id = :userId")
+    BigDecimal calculateTotalPendingUdhaarByUserId(@Param("userId") Long userId);
+
+    List<Customer> findByUserId(Long userId);
 }

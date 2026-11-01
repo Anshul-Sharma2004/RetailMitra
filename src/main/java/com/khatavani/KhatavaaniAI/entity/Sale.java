@@ -1,5 +1,6 @@
 package com.khatavani.KhatavaaniAI.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.khatavani.KhatavaaniAI.model.enums.PaymentMode;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,6 +46,11 @@ public class Sale {
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleItem> items = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

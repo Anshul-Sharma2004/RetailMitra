@@ -45,6 +45,11 @@ public class Customer {
     @JsonIgnore
     private List<CustomerLedgerEntry> ledgerEntries = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
+    private User user;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

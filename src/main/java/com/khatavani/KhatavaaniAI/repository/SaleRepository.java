@@ -23,5 +23,9 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             @Param("endDate") LocalDateTime endDate
     );
 
+
+    @Query("SELECT COALESCE(SUM(s.netAmount), 0) FROM Sale s WHERE s.user.id = :userId AND s.createdAt BETWEEN :start AND :end")
+    BigDecimal calculateTodaySalesByUserId(@Param("userId") Long userId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
     List<Sale> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

@@ -1,8 +1,6 @@
 package com.khatavani.KhatavaaniAI.controller;
 
-import com.khatavani.KhatavaaniAI.dto.AuthResponse;
-import com.khatavani.KhatavaaniAI.dto.LoginRequest;
-import com.khatavani.KhatavaaniAI.dto.RegisterRequest;
+import com.khatavani.KhatavaaniAI.dto.*;
 import com.khatavani.KhatavaaniAI.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,5 +25,18 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        authService.sendPasswordResetOtp(request.getEmail());
+        return ResponseEntity.ok("OTP aapke registered email address par bhej diya gaya hai.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
+        return ResponseEntity.ok("Password successfully change ho gaya hai! Ab naye password se login karein.");
     }
 }
