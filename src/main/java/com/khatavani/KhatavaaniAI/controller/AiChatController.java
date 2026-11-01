@@ -20,7 +20,7 @@ public class AiChatController {
     }
 
     @GetMapping("/chat")
-    @PreAuthorize("hasAnyAuthority('ROLE_SHOPKEEPER', 'ROLE_ADMIN')") // <- Both roles allowed
+    @PreAuthorize("hasAnyAuthority('ROLE_SHOPKEEPER', 'ROLE_ADMIN')")
     public String chat(@RequestParam String query) {
         return chatClient.prompt()
                 .user(query)

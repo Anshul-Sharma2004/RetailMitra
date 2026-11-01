@@ -22,7 +22,7 @@ public class AiTools {
     private final SaleRepository saleRepository;
     private final CustomerRepository customerRepository;
 
-    // Tool 1: Product Stock & Threshold Check
+
     public record StockRequest(String productName) {}
     public record StockResponse(String productName, BigDecimal remainingStock, BigDecimal minThreshold, String status) {}
 
@@ -44,7 +44,7 @@ public class AiTools {
         };
     }
 
-    // Tool 2: Aaj Ki Total Sales & Collection Check
+
     public record SalesRequest(String dummy) {}
     public record SalesResponse(BigDecimal totalRevenue, String message) {}
 
