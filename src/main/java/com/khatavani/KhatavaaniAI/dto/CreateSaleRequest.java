@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 public class CreateSaleRequest {
-    private Long customerId; // Nullable agar walk-in cash customer hai[cite: 1, 3]
+    private Long customerId;
     private PaymentMode paymentMode;
     private BigDecimal discountAmount;
     private List<SaleItemRequest> items;
