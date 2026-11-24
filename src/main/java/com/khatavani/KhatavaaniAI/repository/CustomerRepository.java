@@ -16,7 +16,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     Optional<Customer> findByPhone(String phone);
 
-    // Cron job ke liye: Jinki due date nikal chuki hai aur udhaar baaki hai[cite: 1, 3]
+
     @Query("SELECT c FROM Customer c WHERE c.dueDate <= :currentDate AND c.currentDue > 0")
     List<Customer> findOverdueCustomers(@Param("currentDate") LocalDate currentDate);
 
@@ -24,6 +24,9 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     // Current dukaandar ka kul pending udhaar nikalne ke liye
     @Query("SELECT COALESCE(SUM(c.currentDue), 0) FROM Customer c WHERE c.user.id = :userId")
     BigDecimal calculateTotalPendingUdhaarByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COALESCE(SUM(c.creditLimit), 0) FROM Customer c WHERE c.user.id = :userId")
+    BigDecimal calculateTotalCreditLimitByUserId(@Param("userId") Long userId);
 
     List<Customer> findByUserId(Long userId);
 }

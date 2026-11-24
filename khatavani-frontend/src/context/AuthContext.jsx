@@ -22,11 +22,10 @@ export const AuthProvider = ({ children }) => {
       shopName: extraDetails.shopName || authResponse.shopName || authResponse.email.split('@')[0].toUpperCase() + " MART"
     };
 
-    // 1. LocalStorage update
     localStorage.setItem('khatavani_token', authResponse.token);
     localStorage.setItem('khatavani_user', JSON.stringify(userPayload));
 
-    // 2. React state instant update (taaki App.jsx turant detect kare)
+
     setToken(authResponse.token);
     setUser(userPayload);
   };
