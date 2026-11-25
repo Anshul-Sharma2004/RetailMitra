@@ -99,6 +99,7 @@ export default function UdhaarKhata() {
   const [selectedCust, setSelectedCust] = useState(null);
   const [receivedAmount, setReceivedAmount] = useState('');
   const [sendingReminderId, setSendingReminderId] = useState(null);
+  const [runningScheduler, setRunningScheduler] = useState(false);
 
   const saveActivityLog = (entry) => {
     const updated = [entry, ...activityLogs].slice(0, 15);
@@ -175,7 +176,7 @@ export default function UdhaarKhata() {
       const paid = Number(receivedAmount);
       await api.receivePayment({
         customerId: selectedCust.id,
-        amount: paid
+        amountPaid: paid
       });
 
       const now = new Date();
@@ -204,15 +205,21 @@ export default function UdhaarKhata() {
     }
   };
 
-  // Send Manual Reminder Email
+  // Send Manual Reminder Email (Connected directly to api.sendInstantReminder)
   const handleSendReminder = async (customer) => {
+    if (!customer.email) {
+      setStatusMsg({
+        text: `${customer.name} ka Email ID registered nahi hai! Email bhejne ke liye pehle email add karein.`,
+        isError: true
+      });
+      return;
+    }
+
     setSendingReminderId(customer.id);
+    setStatusMsg({ text: '', isError: false });
+
     try {
-      if (api.sendReminder) {
-        await api.sendReminder(customer.id);
-      } else {
-        await api.runScheduler?.();
-      }
+      const res = await api.sendInstantReminder(customer.id);
 
       const now = new Date();
       saveActivityLog({
@@ -225,12 +232,19 @@ export default function UdhaarKhata() {
       });
 
       setStatusMsg({
-        text: `Payment reminder email ${customer.name} (${customer.email || customer.phone}) ko bhej diya gaya!`,
+        text:
+          typeof res?.data === 'string'
+            ? res.data
+            : `Payment reminder email ${customer.name} (${customer.email}) ko bhej diya gaya!`,
         isError: false
       });
     } catch (err) {
       setStatusMsg({
-        text: err.response?.data?.message || 'Reminder bhejne mein samasya aayi.',
+        text:
+          err.response?.data?.message ||
+          err.response?.data ||
+          err.message ||
+          'Reminder bhejne mein samasya aayi.',
         isError: true
       });
     } finally {
@@ -240,19 +254,32 @@ export default function UdhaarKhata() {
 
   // Run Auto Scheduler Now
   const handleRunScheduler = async () => {
+    setRunningScheduler(true);
+    setStatusMsg({ text: '', isError: false });
+
     try {
-      if (api.runScheduler) {
-        await api.runScheduler();
-      }
+      const res = api.triggerAutoCronJob
+        ? await api.triggerAutoCronJob()
+        : await api.runScheduler?.();
+
       setStatusMsg({
-        text: 'Automated Overdue Reminder Scheduler run ho chuka hai! Sabhi overdue grahakon ko email bhej diya gaya.',
+        text:
+          typeof res?.data === 'string'
+            ? res.data
+            : 'Automated Overdue Reminder Scheduler run ho chuka hai! Sabhi overdue grahakon ko email bhej diya gaya.',
         isError: false
       });
     } catch (err) {
       setStatusMsg({
-        text: err.response?.data?.message || 'Scheduler trigger fail hua.',
+        text:
+          err.response?.data?.message ||
+          err.response?.data ||
+          err.message ||
+          'Scheduler trigger fail hua.',
         isError: true
       });
+    } finally {
+      setRunningScheduler(false);
     }
   };
 
@@ -434,7 +461,7 @@ export default function UdhaarKhata() {
         </div>
       </div>
 
-      {/* 3. AUTOMATED BACKEND CRON JOB BANNER (Themed) */}
+      {/* 3. AUTOMATED BACKEND CRON JOB BANNER */}
       <div className="bg-white border border-[#DDD3D3] rounded-2xl p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-xl bg-[#F2D2D4]/80 border border-[#C88A93]/40 flex items-center justify-center text-[#7A535A]">
@@ -455,10 +482,11 @@ export default function UdhaarKhata() {
 
         <button
           onClick={handleRunScheduler}
-          className="group flex items-center gap-1.5 text-xs font-extrabold bg-[#FFF8EF] hover:bg-[#7A535A] text-[#7A535A] hover:text-[#FFF8EF] border border-[#C88A93] px-4 py-2 rounded-xl transition-all"
+          disabled={runningScheduler}
+          className="group flex items-center gap-1.5 text-xs font-extrabold bg-[#FFF8EF] hover:bg-[#7A535A] disabled:opacity-50 text-[#7A535A] hover:text-[#FFF8EF] border border-[#C88A93] px-4 py-2 rounded-xl transition-all"
         >
           <MailCheck size={14} className="group-hover:scale-110 transition-transform" />
-          Run Auto-Scheduler Now
+          {runningScheduler ? 'Running Scheduler...' : 'Run Auto-Scheduler Now'}
         </button>
       </div>
 
